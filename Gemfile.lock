@@ -4,6 +4,10 @@ dependencies:
     group: 
     - :default
     version: ">= 1.0.0"
+  json: 
+    group: 
+    - :default
+    version: ">= 1.4.2"
   shindo: 
     group: 
     - :default
@@ -13,12 +17,14 @@ specs:
     version: 0.0.14
 - gestalt: 
     version: 0.0.11
+- json: 
+    version: 1.4.3
 - rack: 
     version: 1.2.1
 - shindo: 
     version: 0.1.6
 - sinatra: 
     version: "1.0"
-hash: 9adf3b02a8b174a035b90ed32832b2371ad62bca
+hash: 077633c3aafdaff938ca5bb416e0c8143d93ce3c
 sources: []
 
