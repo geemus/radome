@@ -1,0 +1,16 @@
+--- 
+dependencies: 
+  shindo: 
+    group: 
+    - :default
+    version: ">= 0.1.6"
+specs: 
+- formatador: 
+    version: 0.0.14
+- gestalt: 
+    version: 0.0.11
+- shindo: 
+    version: 0.1.6
+hash: 2df74d0fd630b4388dad50f3c18a2ec10afe81a0
+sources: []
+
