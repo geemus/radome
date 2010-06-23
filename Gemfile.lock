@@ -11,14 +11,14 @@ dependencies:
   excon: 
     group: 
     - :default
-    version: ">= 0.1.1"
+    version: ">= 0.1.2"
   shindo: 
     group: 
     - :default
     version: ">= 0.1.6"
 specs: 
 - excon: 
-    version: 0.1.1
+    version: 0.1.2
 - formatador: 
     version: 0.0.14
 - gestalt: 
@@ -31,6 +31,6 @@ specs:
     version: 0.1.6
 - sinatra: 
     version: "1.0"
-hash: 3fe82150beeb6b40ca84b8ac83ac154ab01d573f
+hash: d10a2e84083ec835db6791c49121dcf7a3236d92
 sources: []
 

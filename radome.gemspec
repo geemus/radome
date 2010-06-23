@@ -48,7 +48,7 @@ Gem::Specification.new do |s|
 
   ## List your runtime dependencies here. Runtime dependencies are those
   ## that are needed for an end user to actually USE your code.
-  s.add_dependency('excon',   ">= 0.1.1")
+  s.add_dependency('excon',   ">= 0.1.2")
   s.add_dependency('json',    ">= 1.4.2")
   s.add_dependency('sinatra', ">= 1.0.0")
 
