@@ -20,7 +20,10 @@ module Radome
       data = JSON.parse(request.body.read)
       for key, value in data
         Thread.main[:data][key] ||= {}
-        Thread.main[:data][key].merge!({Time.now => value})
+        for sub_key, sub_value in value
+          Thread.main[:data][key][sub_key] ||= {}
+          Thread.main[:data][key][sub_key].merge!(sub_value)
+        end
       end
       Thread.main[:data].to_json
     end
