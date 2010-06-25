@@ -1,22 +1,11 @@
 require File.join(File.dirname(__FILE__), '..', 'lib', 'radome')
 require 'excon'
 
-def start_collector
-  @collector ||= begin
-    collector = Thread.new { Rack::Handler::WEBrick.run(Radome::Collector.new, :Port => 9292, :AccessLog => [], :Logger => WEBrick::Log.new(nil, WEBrick::Log::ERROR)) }
-    sleep(1)
-    collector
-  end
-end
-
-def stop_collector
-  @collector && @collector.exit
-end
-
 def with_collector(&block)
-  start_collector
+  collector = Thread.new { Rack::Handler::WEBrick.run(Radome::Collector.new, :Port => 9292, :AccessLog => [], :Logger => WEBrick::Log.new(nil, WEBrick::Log::ERROR)) }
+  sleep(1)
   yield
-  stop_collector
+  collector.exit
 end
 
 def connection
@@ -28,7 +17,8 @@ def get_data
   JSON.parse(data)
 end
 
-def gossip(data)
+def gossip(sensors=:recurring)
+  data = sense(sensors)
   # find available local keys and sync this list with peer
   keys = {}
   for server_id, datum in data
@@ -43,7 +33,7 @@ def gossip(data)
   for server_id, keys in json['pull']
     pull[server_id] = data[server_id].reject {|key,value| !keys.include?(key)}
   end
-  response = connection.request(:method => 'PUT', :body => pull.to_json)
+  connection.request(:method => 'PUT', :body => pull.to_json)
 end
 
 def sense(sensors=:recurring)
@@ -58,14 +48,13 @@ def sense(sensors=:recurring)
   }
 end
 
-# with_collector do
-#
-#   # p gossip(startup)
-#   # 3.times do
-#   #   pp put_data(recurring)
-#   #   sleep(1)
-#   # end
-#   # require 'pp'
-#   # pp get_data
-#
-# end
+with_collector do
+
+  p gossip([:recurring, :startup])
+  3.times do
+    sleep(1)
+    p gossip
+  end
+  require 'pp'
+  pp get_data
+end
