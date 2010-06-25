@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'sinatra/base'
 require 'json'
 
@@ -12,20 +13,37 @@ module Radome
 
     before { content_type "application/json" }
 
-    get "/" do
+    get '/' do
       Thread.main[:data].to_json
     end
 
-    put "/" do
+    put '/' do
       data = JSON.parse(request.body.read)
-      for key, value in data
-        Thread.main[:data][key] ||= {}
-        for sub_key, sub_value in value
-          Thread.main[:data][key][sub_key] ||= {}
-          Thread.main[:data][key][sub_key].merge!(sub_value)
+      for id, value in data
+        Thread.main[:data][id] ||= {}
+        for timestamp, metrics in value
+          Thread.main[:data][id][timestamp] ||= {}
+          Thread.main[:data][id][timestamp].merge!(metrics)
         end
       end
-      Thread.main[:data].to_json
+      status(200)
+    end
+
+    post '/' do
+      remote_keys = JSON.parse(request.body.read)
+      local_keys = {}
+      for server_id, datum in Thread.main[:data]
+        local_keys[server_id] = datum.keys
+        remote_keys[server_id] && remote_keys[server_id] -= datum.keys
+      end
+      for server_id, keys in remote_keys
+        local_keys[server_id] && local_keys[server_id] -= remote_keys[server_id]
+      end
+      data = {}
+      for server_id, keys in local_keys
+        data[server_id] = Thread.main[:data][server_id].reject {|key,value| !keys.include?(key)}
+      end
+      {'push' => data, 'pull' => remote_keys}.to_json
     end
 
   end

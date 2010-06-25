@@ -28,9 +28,22 @@ def get_data
   JSON.parse(data)
 end
 
-def put_data(new_data)
-  data = connection.request(:method => 'PUT', :body => new_data.to_json).body
-  JSON.parse(data)
+def gossip(data)
+  # find available local keys and sync this list with peer
+  keys = {}
+  for server_id, datum in data
+    keys[server_id] = datum.keys
+  end
+  response = connection.request(:method => 'POST', :body => keys.to_json)
+  json = JSON.parse(response.body)
+  # update local data from peer
+
+  # push requested updates to peer
+  pull = {}
+  for server_id, keys in json['pull']
+    pull[server_id] = data[server_id].reject {|key,value| !keys.include?(key)}
+  end
+  response = connection.request(:method => 'PUT', :body => pull.to_json)
 end
 
 def startup
@@ -83,12 +96,15 @@ end
 
 with_collector do
 
-  put_data(startup)
-  3.times do
-    put_data(recurring)
-    sleep(1)
-  end
-  require 'pp'
-  pp get_data
+  p gossip(startup)
+  # 3.times do
+  #   pp put_data(recurring)
+  #   sleep(1)
+  # end
+  # require 'pp'
+  # pp get_data
 
 end
+
+#   p available_pairs(startup)
+#   p available_pairs(recurring)
