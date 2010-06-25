@@ -46,65 +46,26 @@ def gossip(data)
   response = connection.request(:method => 'PUT', :body => pull.to_json)
 end
 
-def startup
-  uname = `uname -a`
-  os_name, hostname, os_release, os_version, architecture = uname.match(/^(\S*) (\S*) (\S*) (.*) (.*)$/).captures
-
-  boottime = `sysctl kern.boottime`
-  seconds, microseconds = boottime.match(/\{ sec = ([0-9]*), usec = ([0-9]*) \}/).captures
-  system_boot_time = Time.at(seconds.to_i, microseconds.to_i).to_i
-
-  system_time = `date +"%s"`.to_i
-
+def sense(sensors=:recurring)
+  data = {}
+  for sensor in [*sensors]
+    data.merge!(JSON.parse(`#{File.dirname(__FILE__)}/../lib/radome/sensors/#{sensor}.rb`))
+  end
   {
-    hostname => {
-      Time.now.to_i => {
-        :architecture     => architecture,
-        :os => {
-          :name     => os_name,
-          :release  => os_release,
-          :version  => os_version
-        },
-        :system_boot_time => system_boot_time,
-        :system_time      => system_time
-      }
+    `hostname`.chop! => {
+      Time.now.to_i => data
     }
   }
 end
 
-def recurring
-  hostname = `hostname`.chomp!
-
-  uptime = `uptime`
-  one_minute_load, five_minute_load, fifteen_minute_load = uptime.match(/load averages: ([\.0-9]*) ([\.0-9]*) ([\.0-9]*)/).captures
-
-  system_time = `date +"%s"`.to_i
-
-  {
-    hostname => {
-      Time.now.to_i => {
-        :load => {
-          :one_minute     => one_minute_load.to_f,
-          :five_minute    => five_minute_load.to_f,
-          :fifteen_minute => fifteen_minute_load.to_f
-        },
-        :system_time => system_time
-      }
-    }
-  }
-end
-
-with_collector do
-
-  p gossip(startup)
-  # 3.times do
-  #   pp put_data(recurring)
-  #   sleep(1)
-  # end
-  # require 'pp'
-  # pp get_data
-
-end
-
-#   p available_pairs(startup)
-#   p available_pairs(recurring)
+# with_collector do
+#
+#   # p gossip(startup)
+#   # 3.times do
+#   #   pp put_data(recurring)
+#   #   sleep(1)
+#   # end
+#   # require 'pp'
+#   # pp get_data
+#
+# end
