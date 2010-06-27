@@ -2,7 +2,14 @@ require File.join(File.dirname(__FILE__), '..', 'lib', 'radome')
 require 'excon'
 
 def with_collector(&block)
-  collector = Thread.new { Rack::Handler::WEBrick.run(Radome::Collector.new, :Port => 9292, :AccessLog => [], :Logger => WEBrick::Log.new(nil, WEBrick::Log::ERROR)) }
+  collector = Thread.new do
+    Rack::Handler::WEBrick.run(
+      Radome::Collector.new,
+      :Port => 9292,
+      :AccessLog => [],
+      :Logger => WEBrick::Log.new(nil, WEBrick::Log::ERROR)
+    )
+  end
   sleep(1)
   yield
   collector.exit
@@ -49,7 +56,6 @@ def sense(sensors=:recurring)
 end
 
 with_collector do
-
   p gossip([:recurring, :startup])
   3.times do
     sleep(1)

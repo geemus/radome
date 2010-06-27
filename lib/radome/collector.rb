@@ -1,49 +1,33 @@
 require 'rubygems'
 require 'sinatra/base'
-require 'json'
+
+require 'radome/data_store'
 
 module Radome
 
   class Collector < Sinatra::Base
 
     def initialize(*args)
-      Thread.main[:data] = {}
+      @store = DataStore.new
       super
     end
 
     before { content_type "application/json" }
 
     get '/' do
-      Thread.main[:data].to_json
+      @store.to_json
     end
 
     put '/' do
       data = JSON.parse(request.body.read)
-      for id, value in data
-        Thread.main[:data][id] ||= {}
-        for timestamp, metrics in value
-          Thread.main[:data][id][timestamp] ||= {}
-          Thread.main[:data][id][timestamp].merge!(metrics)
-        end
-      end
+      @store.update(data)
       status(200)
     end
 
     post '/' do
       remote_keys = JSON.parse(request.body.read)
-      local_keys = {}
-      for server_id, datum in Thread.main[:data]
-        local_keys[server_id] = datum.keys
-        remote_keys[server_id] && remote_keys[server_id] -= datum.keys
-      end
-      for server_id, keys in remote_keys
-        local_keys[server_id] && local_keys[server_id] -= remote_keys[server_id]
-      end
-      data = {}
-      for server_id, keys in local_keys
-        data[server_id] = Thread.main[:data][server_id].reject {|key,value| !keys.include?(key)}
-      end
-      {'push' => data, 'pull' => remote_keys}.to_json
+      data = @store.compare(remote_keys)
+      data.to_json
     end
 
   end
