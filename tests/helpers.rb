@@ -32,7 +32,7 @@ def gossip(sensors=:recurring)
   response = connection.request(:method => 'POST', :body => @data.keys.to_json)
   json = JSON.parse(response.body)
   # update local data from peer
-  p json['push']
+  @data.update(json['push'])
 
   # push requested updates to peer
   pull = {}
@@ -54,7 +54,9 @@ def sense(sensors=:recurring)
   })
 end
 
+
 with_collector do
+  connection.request(:method => 'PUT', :body => {'fake' => {'123456789' => {'a' => 'b'}}}.to_json)
   p gossip([:recurring, :startup])
   3.times do
     sleep(1)

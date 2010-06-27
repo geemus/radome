@@ -20,9 +20,7 @@ class DataStore
     end
     data = {}
     for server_id, keys in local_keys
-      if (push = @data[server_id].reject {|key,value| keys.include?(key)}) && !push.empty?
-        data[server_id] = push
-      end
+      data[server_id] = @data[server_id].reject {|key,value| !keys.include?(key)}
     end
     {'push' => data, 'pull' => remote_keys}
   end
