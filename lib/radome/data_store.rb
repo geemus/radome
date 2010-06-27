@@ -27,6 +27,14 @@ class DataStore
     {'push' => data, 'pull' => remote_keys}
   end
 
+  def keys
+    keys = {}
+    for key, value in @data
+      keys[key] = value.keys
+    end
+    keys
+  end
+
   def to_json
     @data.to_json
   end
