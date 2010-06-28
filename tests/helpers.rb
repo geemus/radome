@@ -24,10 +24,11 @@ def get_data
   JSON.parse(data)
 end
 
-@data = DataStore.new(Thread.current[:data])
+@data = DataStore.new
 
 def gossip(sensors=:recurring)
   sense(sensors)
+
   # find available local keys and sync this list with peer
   response = connection.request(:method => 'POST', :body => @data.keys.to_json)
   json = JSON.parse(response.body)
@@ -49,11 +50,10 @@ def sense(sensors=:recurring)
   end
   @data.update({
     `hostname`.chop! => {
-      Time.now.to_i => new_data
+      Time.now.to_i.to_s => new_data
     }
   })
 end
-
 
 with_collector do
   connection.request(:method => 'PUT', :body => {'fake' => {'123456789' => {'a' => 'b'}}}.to_json)

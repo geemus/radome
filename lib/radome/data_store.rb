@@ -5,8 +5,9 @@ class DataStore
 
   attr_reader :data
 
-  def initialize(store=Thread.main[:data])
-    @data ||= {}
+  def initialize
+    Thread.current[:data] ||= {}
+    @data = Thread.current[:data]
   end
 
   def compare(remote_keys)
