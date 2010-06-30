@@ -24,48 +24,19 @@ def get_data
   JSON.parse(data)
 end
 
-@data = DataStore.new
-
-def gossip(sensors=:recurring)
-  sense(sensors)
-
-  # find available local keys and sync this list with peer
-  response = connection.request(:method => 'POST', :body => @data.keys.to_json)
-  json = JSON.parse(response.body)
-  # update local data from peer
-  @data.update(json['push'])
-
-  # push requested updates to peer
-  pull = {}
-  for server_id, keys in json['pull']
-    pull[server_id] = @data.data[server_id].reject {|key,value| !keys.include?(key)}
-  end
-  connection.request(:method => 'PUT', :body => pull.to_json)
-end
-
-def sense(sensors=:recurring)
-  new_data = {}
-  for sensor in [*sensors]
-    new_data.merge!(JSON.parse(`#{File.dirname(__FILE__)}/../lib/radome/sensors/#{sensor}.rb`))
-  end
-  @data.update({
-    `hostname`.chop! => {
-      Time.now.to_i.to_s => new_data
-    }
-  })
-end
+sensor = Sensor.new
 
 with_collector do
   connection.request(:method => 'PUT', :body => {'fake' => {'123456789' => {'a' => 'b'}}}.to_json)
-  p gossip([:recurring, :startup])
+  p sensor.gossip([:recurring, :startup])
   3.times do
     sleep(1)
-    p gossip
+    p sensor.gossip
   end
   require 'pp'
   p 'local'
-  pp @data.data
+  pp sensor.data
   p 'remote'
   pp get_data
-  p @data.data == get_data
+  p sensor.data == get_data
 end
