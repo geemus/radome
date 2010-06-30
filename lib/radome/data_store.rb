@@ -7,8 +7,8 @@ module Radome
     attr_reader :data
 
     def initialize
-      Thread.current[:data] ||= {}
-      @data = Thread.current[:data]
+      Thread.main[:data] ||= {}
+      @data = Thread.main[:data]
     end
 
     def compare(remote_keys)

@@ -23,6 +23,7 @@ module Radome
       # find available local keys and sync this list with peer
       response = connection.request(:method => 'POST', :body => @data_store.keys.to_json)
       json = JSON.parse(response.body)
+
       # update local data from peer
       @data_store.update(json['push'])
 

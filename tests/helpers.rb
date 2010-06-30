@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), '..', 'lib', 'radome')
 require 'excon'
 
 def with_server(&block)
-  server = Thread.new do
+  pid = Process.fork do
     Rack::Handler::WEBrick.run(
       Radome::Server.new,
       :Port => 9292,
@@ -12,7 +12,7 @@ def with_server(&block)
   end
   sleep(1)
   yield
-  server.exit
+  Process.kill(9, pid)
 end
 
 def connection
@@ -27,7 +27,7 @@ end
 collector = Radome::Collector.new
 
 with_server do
-  connection.request(:method => 'PUT', :body => {'fake' => {'123456789' => {'a' => 'b'}}}.to_json)
+  connection.request(:method => 'PUT', :body => {'fake' => {Time.now.to_i.to_s => {'a' => 'b'}}}.to_json)
   p collector.gossip([:recurring, :startup])
   3.times do
     sleep(1)
