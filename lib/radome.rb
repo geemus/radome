@@ -7,7 +7,7 @@ $LOAD_PATH.unshift __DIR__ unless
   $LOAD_PATH.include?(File.expand_path(__DIR__))
 
 require 'radome/collector'
-require 'radome/sensor'
+require 'radome/server'
 
 module Radome
 

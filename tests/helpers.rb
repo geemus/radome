@@ -1,10 +1,10 @@
 require File.join(File.dirname(__FILE__), '..', 'lib', 'radome')
 require 'excon'
 
-def with_collector(&block)
-  collector = Thread.new do
+def with_server(&block)
+  server = Thread.new do
     Rack::Handler::WEBrick.run(
-      Radome::Collector.new,
+      Radome::Server.new,
       :Port => 9292,
       :AccessLog => [],
       :Logger => WEBrick::Log.new(nil, WEBrick::Log::ERROR)
@@ -12,7 +12,7 @@ def with_collector(&block)
   end
   sleep(1)
   yield
-  collector.exit
+  server.exit
 end
 
 def connection
@@ -24,19 +24,19 @@ def get_data
   JSON.parse(data)
 end
 
-sensor = Sensor.new
+collector = Radome::Collector.new
 
-with_collector do
+with_server do
   connection.request(:method => 'PUT', :body => {'fake' => {'123456789' => {'a' => 'b'}}}.to_json)
-  p sensor.gossip([:recurring, :startup])
+  p collector.gossip([:recurring, :startup])
   3.times do
     sleep(1)
-    p sensor.gossip
+    p collector.gossip
   end
   require 'pp'
   p 'local'
-  pp sensor.data
+  pp collector.data
   p 'remote'
   pp get_data
-  p sensor.data == get_data
+  p collector.data == get_data
 end
