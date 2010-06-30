@@ -4,7 +4,6 @@ require 'sinatra/base'
 require 'radome/data_store'
 
 module Radome
-
   class Collector < Sinatra::Base
 
     def initialize(*args)
@@ -31,5 +30,4 @@ module Radome
     end
 
   end
-
 end
