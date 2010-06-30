@@ -11,10 +11,11 @@ class DataStore
   end
 
   def compare(remote_keys)
+    expire
     local_keys = {}
-    for server_id, datum in @data
-      local_keys[server_id] = datum.keys
-      remote_keys[server_id] && remote_keys[server_id] -= datum.keys
+    for server_id, data in @data
+      local_keys[server_id] = data.keys
+      remote_keys[server_id] && remote_keys[server_id] -= data.keys
     end
     for server_id, keys in remote_keys
       local_keys[server_id] && local_keys[server_id] -= remote_keys[server_id]
@@ -24,6 +25,13 @@ class DataStore
       data[server_id] = @data[server_id].reject {|key,value| !keys.include?(key)}
     end
     {'push' => data, 'pull' => remote_keys}
+  end
+
+  def expire
+    expiration = (Time.now - 60 * 10).to_i
+    for server_id, data in @data
+      data.reject! {|key, value| key.to_i <= expiration }
+    end
   end
 
   def keys

@@ -67,4 +67,5 @@ with_collector do
   pp @data.data
   p 'remote'
   pp get_data
+  p @data.data == get_data
 end
