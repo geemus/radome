@@ -27,7 +27,9 @@ end
 collector = Radome::Collector.new
 
 with_server do
-  connection.request(:method => 'PUT', :body => {'fake' => {Time.now.to_i.to_s => {'a' => 'b'}}}.to_json)
+  datum = {Time.now.to_i.to_s => {'a' => 'b'}}
+  connection.request(:method => 'PUT', :body => {'remote' => datum}.to_json)
+  collector.data_store.update({'local' => datum})
   p collector.gossip([:recurring, :startup])
   3.times do
     sleep(1)
