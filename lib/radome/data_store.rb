@@ -36,6 +36,7 @@ module Radome
     end
 
     def keys
+      expire
       keys = {}
       for key, value in @data
         keys[key] = value.keys
