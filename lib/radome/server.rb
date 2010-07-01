@@ -17,14 +17,13 @@ module Radome
 
     put '/' do
       data = JSON.parse(request.body.read)
-      @metrics.update(data)
+      @metrics.update(data['metrics'])
       status(200)
     end
 
     post '/' do
-      remote_keys = JSON.parse(request.body.read)
-      data = @metrics.compare(remote_keys)
-      data.to_json
+      data = JSON.parse(request.body.read)
+      { 'metrics' => @metrics.compare(data['metrics']) }.to_json
     end
 
   end

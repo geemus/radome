@@ -17,18 +17,18 @@ module Radome
       sense(sensors)
 
       # find available local keys and sync this list with peer
-      response = connection.request(:method => 'POST', :body => @metrics.keys.to_json)
+      response = connection.request(:method => 'POST', :body => {'metrics' => @metrics.keys}.to_json)
       json = JSON.parse(response.body)
 
       # update local data from peer
-      @metrics.update(json['push'])
+      @metrics.update(json['metrics']['push'])
 
       # push requested updates to peer
       pull = {}
-      for server_id, keys in json['pull']
+      for server_id, keys in json['metrics']['pull']
         pull[server_id] = @metrics.data[server_id].reject {|key,value| !keys.include?(key)}
       end
-      connection.request(:method => 'PUT', :body => pull.to_json)
+      connection.request(:method => 'PUT', :body => {'metrics' => pull}.to_json)
     end
 
     def run

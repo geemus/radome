@@ -6,7 +6,8 @@ module Radome
 
     attr_reader :data
 
-    def initialize(type)
+    def initialize(type, options={})
+      @options = {:expiration => true}.merge!(options)
       Thread.main[type] ||= {}
       @data = Thread.main[type]
     end
@@ -29,6 +30,7 @@ module Radome
     end
 
     def expire
+      return unless @options[:expiration]
       expiration = (Time.now - 60 * 10).to_i
       for server_id, data in @data
         data.reject! {|key, value| key.to_i <= expiration }
