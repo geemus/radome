@@ -33,6 +33,7 @@ module Radome
       for server_id, data in @data
         data.reject! {|key, value| key.to_i <= expiration }
       end
+      @data.reject! {|server_id, data| data.empty?}
     end
 
     def keys
