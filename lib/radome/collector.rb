@@ -1,3 +1,5 @@
+require 'socket'
+
 require 'radome/data_store'
 
 module Radome
@@ -44,7 +46,7 @@ module Radome
         new_data.merge!(JSON.parse(`#{File.dirname(__FILE__)}/sensors/#{sensor}.rb`))
       end
       @metrics.update({
-        `hostname`.chop! => {
+        Socket.gethostname => {
           Time.now.to_i.to_s => new_data
         }
       })
