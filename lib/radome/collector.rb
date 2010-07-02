@@ -8,7 +8,7 @@ module Radome
     attr_accessor :metrics
 
     def initialize
-      @metrics = DataStore.new(:metrics)
+      @metrics = DataStore.new({:type => :metrics})
     end
 
     def connection

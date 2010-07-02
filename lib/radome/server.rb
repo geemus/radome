@@ -5,7 +5,7 @@ module Radome
   class Server < Sinatra::Base
 
     def initialize(*args)
-      @metrics = DataStore.new(:metrics)
+      @metrics = DataStore.new({:type => :metrics})
       super
     end
 

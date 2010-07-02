@@ -6,10 +6,11 @@ module Radome
 
     attr_reader :data
 
-    def initialize(type, options={})
+    def initialize(options={})
       @options = {:expiration => true}.merge!(options)
-      Thread.main[type] ||= {}
-      @data = Thread.main[type]
+      @type = options[:type]
+      Thread.main[@type] ||= {}
+      @data = Thread.main[@type]
     end
 
     def compare(remote_keys)
