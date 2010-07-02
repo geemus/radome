@@ -7,7 +7,7 @@ module Radome
     attr_reader :data
 
     def initialize(options={})
-      @options = {:expiration => true}.merge!(options)
+      @options = {:expiration => 600}.merge!(options)
       @type = options[:type]
       Thread.main[@type] ||= {}
       @data = Thread.main[@type]
@@ -31,10 +31,17 @@ module Radome
     end
 
     def expire
-      return unless @options[:expiration]
-      expiration = (Time.now - 60 * 10).to_i
-      for server_id, data in @data
-        data.reject! {|key, value| key.to_i <= expiration }
+      case @options[:expiration]
+      when Integer
+        expiration = (Time.now - 60 * 10).to_i
+        for server_id, data in @data
+          data.reject! {|key, value| key.to_i <= expiration }
+        end
+      when :maximum
+        for server_id, data in @data
+          maximum = data.keys.max
+          data.reject! {|key, value| key != maximum}
+        end
       end
       @data.reject! {|server_id, data| data.empty?}
     end
@@ -59,6 +66,9 @@ module Radome
           @data[id][timestamp] ||= {}
           @data[id][timestamp].merge!(metrics)
         end
+      end
+      if @options[:expiration] == :maximum
+        expire
       end
     end
 
