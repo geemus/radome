@@ -19,7 +19,7 @@ module Radome
       sense(sensors)
 
       # find available local keys and sync this list with peer
-      response = connection.request(:method => 'POST', :body => {'metrics' => @data_store.keys(:metrics)}.to_json)
+      response = connection.request(:method => 'POST', :body => @data_store.keys.to_json)
       json = JSON.parse(response.body)
 
       # update local data from peer

@@ -50,11 +50,14 @@ module Radome
       Thread.main[type].reject! {|server_id, data| data.empty?}
     end
 
-    def keys(type)
-      expire(type)
+    def keys
       keys = {}
-      for key, value in Thread.main[type]
-        keys[key] = value.keys
+      for type, options in @stores
+        expire(type)
+        keys[type] = {}
+        for key, value in Thread.main[type]
+          keys[type][key] = value.keys
+        end
       end
       keys
     end
