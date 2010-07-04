@@ -30,8 +30,13 @@ module Radome
       {'push' => data, 'pull' => remote_keys}
     end
 
-    def data(type)
-      Thread.main[type]
+    def data
+      data = {}
+      data = {}
+      for type, options in @stores
+        data[type] = Thread.main[type]
+      end
+      data
     end
 
     def expire(type)
@@ -62,8 +67,8 @@ module Radome
       keys
     end
 
-    def to_json(type)
-      Thread.main[type].to_json
+    def to_json
+      data.to_json
     end
 
     def update(new_data)

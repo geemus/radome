@@ -12,7 +12,7 @@ module Radome
     before { content_type "application/json" }
 
     get '/' do
-      @data_store.to_json(:metrics)
+      @data_store.to_json
     end
 
     put '/' do

@@ -28,7 +28,7 @@ module Radome
       # push requested updates to peer
       pull = {}
       for server_id, keys in json['metrics']['pull']
-        pull[server_id] = @data_store.data(:metrics)[server_id].reject {|key,value| !keys.include?(key)}
+        pull[server_id] = @data_store.data['metrics'][server_id].reject {|key,value| !keys.include?(key)}
       end
       connection.request(:method => 'PUT', :body => {'metrics' => pull}.to_json)
     end
