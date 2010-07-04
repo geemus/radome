@@ -4,8 +4,10 @@ require 'json'
 module Radome
   class DataStore
 
-    def initialize(stores={})
-      @stores = stores
+    def initialize
+      @stores = {
+        :metrics  => { :expiration => 60 * 10 }
+      }
       for key, values in @stores
         Thread.main[key] ||= {}
       end

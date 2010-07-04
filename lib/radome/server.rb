@@ -5,7 +5,7 @@ module Radome
   class Server < Sinatra::Base
 
     def initialize(*args)
-      @data_store = DataStore.new({:metrics => {:expiration => 600}})
+      @data_store = DataStore.new
       super
     end
 

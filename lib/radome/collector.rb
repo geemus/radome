@@ -8,7 +8,7 @@ module Radome
     attr_accessor :data_store
 
     def initialize
-      @data_store = DataStore.new({:metrics => {:expiration => 600}})
+      @data_store = DataStore.new
     end
 
     def connection
