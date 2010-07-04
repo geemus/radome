@@ -6,7 +6,7 @@ module Radome
 
     def initialize
       @stores = {
-        :metrics  => { :expiration => 60 * 10 }
+        'metrics'  => { :expiration => 60 * 10 }
       }
       for key, values in @stores
         Thread.main[key] ||= {}
@@ -66,16 +66,18 @@ module Radome
       Thread.main[type].to_json
     end
 
-    def update(type, new_data)
-      for id, value in new_data
-        Thread.main[type][id] ||= {}
-        for timestamp, metrics in value
-          Thread.main[type][id][timestamp] ||= {}
-          Thread.main[type][id][timestamp].merge!(metrics)
+    def update(new_data)
+      for type, data in new_data
+        for id, value in data
+          Thread.main[type][id] ||= {}
+          for timestamp, metrics in value
+            Thread.main[type][id][timestamp] ||= {}
+            Thread.main[type][id][timestamp].merge!(metrics)
+          end
         end
-      end
-      if @stores[type][:expiration] == :maximum
-        expire(type)
+        if @stores[type][:expiration] == :maximum
+          expire(type)
+        end
       end
     end
 

@@ -23,7 +23,7 @@ module Radome
       json = JSON.parse(response.body)
 
       # update local data from peer
-      @data_store.update(:metrics, json['metrics']['push'])
+      @data_store.update({'metrics' => json['metrics']['push']})
 
       # push requested updates to peer
       pull = {}
@@ -45,7 +45,7 @@ module Radome
       for sensor in [*sensors]
         new_data.merge!(JSON.parse(`#{File.dirname(__FILE__)}/sensors/#{sensor}.rb`))
       end
-      @data_store.update(:metrics, { Socket.gethostname => { Time.now.to_i.to_s => new_data } })
+      @data_store.update({'metrics' => { Socket.gethostname => { Time.now.to_i.to_s => new_data } }})
     end
 
   end

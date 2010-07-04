@@ -17,13 +17,13 @@ module Radome
 
     put '/' do
       data = JSON.parse(request.body.read)
-      @data_store.update(:metrics, data['metrics'])
+      @data_store.update(data)
       status(200)
     end
 
     post '/' do
       data = JSON.parse(request.body.read)
-      { 'metrics' => @data_store.compare(:metrics, data['metrics']) }.to_json
+      { 'metrics' => @data_store.compare('metrics', data['metrics']) }.to_json
     end
 
   end
