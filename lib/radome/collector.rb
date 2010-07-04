@@ -5,10 +5,10 @@ require 'radome/data_store'
 module Radome
   class Collector
 
-    attr_accessor :metrics
+    attr_accessor :data_store
 
     def initialize
-      @metrics = DataStore.new({:type => :metrics})
+      @data_store = DataStore.new({:metrics => {:expiration => 600}})
     end
 
     def connection
@@ -19,16 +19,16 @@ module Radome
       sense(sensors)
 
       # find available local keys and sync this list with peer
-      response = connection.request(:method => 'POST', :body => {'metrics' => @metrics.keys}.to_json)
+      response = connection.request(:method => 'POST', :body => {'metrics' => @data_store.keys(:metrics)}.to_json)
       json = JSON.parse(response.body)
 
       # update local data from peer
-      @metrics.update(json['metrics']['push'])
+      @data_store.update(:metrics, json['metrics']['push'])
 
       # push requested updates to peer
       pull = {}
       for server_id, keys in json['metrics']['pull']
-        pull[server_id] = @metrics.data[server_id].reject {|key,value| !keys.include?(key)}
+        pull[server_id] = @data_store.data(:metrics)[server_id].reject {|key,value| !keys.include?(key)}
       end
       connection.request(:method => 'PUT', :body => {'metrics' => pull}.to_json)
     end
@@ -45,11 +45,7 @@ module Radome
       for sensor in [*sensors]
         new_data.merge!(JSON.parse(`#{File.dirname(__FILE__)}/sensors/#{sensor}.rb`))
       end
-      @metrics.update({
-        Socket.gethostname => {
-          Time.now.to_i.to_s => new_data
-        }
-      })
+      @data_store.update(:metrics, { Socket.gethostname => { Time.now.to_i.to_s => new_data } })
     end
 
   end

@@ -4,19 +4,17 @@ require 'json'
 module Radome
   class DataStore
 
-    attr_reader :data
-
-    def initialize(options={})
-      @options = {:expiration => 600}.merge!(options)
-      @type = options[:type]
-      Thread.main[@type] ||= {}
-      @data = Thread.main[@type]
+    def initialize(stores={})
+      @stores = stores
+      for key, values in @stores
+        Thread.main[key] ||= {}
+      end
     end
 
-    def compare(remote_keys)
-      expire
+    def compare(type, remote_keys)
+      expire(type)
       local_keys = {}
-      for server_id, data in @data
+      for server_id, data in Thread.main[type]
         local_keys[server_id] = data.keys
         remote_keys[server_id] && remote_keys[server_id] -= data.keys
       end
@@ -25,52 +23,57 @@ module Radome
       end
       data = {}
       for server_id, keys in local_keys
-        data[server_id] = @data[server_id].reject {|key,value| !keys.include?(key)}
+        data[server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
       end
       {'push' => data, 'pull' => remote_keys}
     end
 
-    def expire
-      case @options[:expiration]
+    def data(type)
+      Thread.main[type]
+    end
+
+    def expire(type)
+      case @stores[type][:expiration]
       when Integer
         expiration = (Time.now - 60 * 10).to_i
-        for server_id, data in @data
+        for server_id, data in Thread.main[type]
           data.reject! {|key, value| key.to_i <= expiration }
         end
       when :maximum
-        for server_id, data in @data
+        for server_id, data in Thread.main[type]
           maximum = data.keys.max
           data.reject! {|key, value| key != maximum}
         end
       end
-      @data.reject! {|server_id, data| data.empty?}
+      Thread.main[type].reject! {|server_id, data| data.empty?}
     end
 
-    def keys
-      expire
+    def keys(type)
+      expire(type)
       keys = {}
-      for key, value in @data
+      for key, value in Thread.main[type]
         keys[key] = value.keys
       end
       keys
     end
 
-    def to_json
-      @data.to_json
+    def to_json(type)
+      Thread.main[type].to_json
     end
 
-    def update(new_data)
+    def update(type, new_data)
       for id, value in new_data
-        @data[id] ||= {}
+        Thread.main[type][id] ||= {}
         for timestamp, metrics in value
-          @data[id][timestamp] ||= {}
-          @data[id][timestamp].merge!(metrics)
+          Thread.main[type][id][timestamp] ||= {}
+          Thread.main[type][id][timestamp].merge!(metrics)
         end
       end
-      if @options[:expiration] == :maximum
-        expire
+      if @stores[type][:expiration] == :maximum
+        expire(type)
       end
     end
 
   end
+
 end

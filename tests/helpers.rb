@@ -29,7 +29,7 @@ collector = Radome::Collector.new
 with_server do
   datum = {Time.now.to_i.to_s => {'a' => 'b'}}
   connection.request(:method => 'PUT', :body => {'metrics' => {'remote' => datum}}.to_json)
-  collector.metrics.update({'local' => datum})
+  collector.data_store.data(:metrics).update({'local' => datum})
   p collector.gossip([:recurring, :startup])
   3.times do
     sleep(1)
@@ -37,8 +37,8 @@ with_server do
   end
   require 'pp'
   p 'local'
-  pp collector.metrics.data
+  pp collector.data_store.data(:metrics)
   p 'remote'
   pp get_data
-  p collector.metrics.data == get_data
+  p collector.data_store.data(:metrics) == get_data
 end

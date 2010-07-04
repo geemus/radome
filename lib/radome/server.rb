@@ -5,25 +5,25 @@ module Radome
   class Server < Sinatra::Base
 
     def initialize(*args)
-      @metrics = DataStore.new({:type => :metrics})
+      @data_store = DataStore.new({:metrics => {:expiration => 600}})
       super
     end
 
     before { content_type "application/json" }
 
     get '/' do
-      @metrics.to_json
+      @data_store.to_json(:metrics)
     end
 
     put '/' do
       data = JSON.parse(request.body.read)
-      @metrics.update(data['metrics'])
+      @data_store.update(:metrics, data['metrics'])
       status(200)
     end
 
     post '/' do
       data = JSON.parse(request.body.read)
-      { 'metrics' => @metrics.compare(data['metrics']) }.to_json
+      { 'metrics' => @data_store.compare(:metrics, data['metrics']) }.to_json
     end
 
   end
