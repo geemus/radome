@@ -30,7 +30,7 @@ module Radome
           comparison[type]['push'][server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
         end
       end
-      comparison
+      comparison.to_json
     end
 
     def data
@@ -38,7 +38,7 @@ module Radome
       for type, options in @stores
         data[type] = Thread.main[type]
       end
-      data
+      data.to_json
     end
 
     def expire
@@ -68,11 +68,7 @@ module Radome
           keys[type][key] = value.keys
         end
       end
-      keys
-    end
-
-    def to_json
-      data.to_json
+      keys.to_json
     end
 
     def pushpull(new_data)
@@ -89,7 +85,7 @@ module Radome
           pull[type][server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
         end
       end
-      pull
+      pull.to_json
     end
 
     def update(new_data)

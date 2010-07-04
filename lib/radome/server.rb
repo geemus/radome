@@ -12,7 +12,7 @@ module Radome
     before { content_type "application/json" }
 
     get '/' do
-      @data_store.to_json
+      @data_store.data
     end
 
     put '/' do
@@ -23,7 +23,7 @@ module Radome
 
     post '/' do
       data = JSON.parse(request.body.read)
-      @data_store.compare(data).to_json
+      @data_store.compare(data)
     end
 
   end

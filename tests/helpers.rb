@@ -37,8 +37,8 @@ with_server do
   end
   require 'pp'
   p 'local'
-  pp collector.data_store.data
+  pp JSON.parse(collector.data_store.data)
   p 'remote'
   pp get_data
-  p collector.data_store.data == get_data
+  p JSON.parse(collector.data_store.data) == get_data
 end
