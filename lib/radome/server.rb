@@ -23,7 +23,7 @@ module Radome
 
     post '/' do
       data = JSON.parse(request.body.read)
-      { 'metrics' => @data_store.compare('metrics', data['metrics']) }.to_json
+      @data_store.compare(data).to_json
     end
 
   end

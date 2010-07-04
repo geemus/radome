@@ -13,21 +13,24 @@ module Radome
       end
     end
 
-    def compare(type, remote_keys)
+    def compare(remote_data)
       expire
-      local_keys = {}
-      for server_id, data in Thread.main[type]
-        local_keys[server_id] = data.keys
-        remote_keys[server_id] && remote_keys[server_id] -= data.keys
+      comparison = {}
+      for type, remote_keys in remote_data
+        comparison[type] = { 'push' => {}, 'pull' => remote_keys }
+        local_keys = {}
+        for server_id, data in Thread.main[type]
+          local_keys[server_id] = data.keys
+          comparison[type]['pull'][server_id] && comparison[type]['pull'][server_id] -= data.keys
+        end
+        for server_id, keys in comparison[type]['pull']
+          local_keys[server_id] && local_keys[server_id] -= comparison[type]['pull'][server_id]
+        end
+        for server_id, keys in local_keys
+          comparison[type]['push'][server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
+        end
       end
-      for server_id, keys in remote_keys
-        local_keys[server_id] && local_keys[server_id] -= remote_keys[server_id]
-      end
-      data = {}
-      for server_id, keys in local_keys
-        data[server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
-      end
-      {'push' => data, 'pull' => remote_keys}
+      comparison
     end
 
     def data
