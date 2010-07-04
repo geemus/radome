@@ -14,7 +14,7 @@ module Radome
     end
 
     def compare(type, remote_keys)
-      expire(type)
+      expire
       local_keys = {}
       for server_id, data in Thread.main[type]
         local_keys[server_id] = data.keys
@@ -32,33 +32,34 @@ module Radome
 
     def data
       data = {}
-      data = {}
       for type, options in @stores
         data[type] = Thread.main[type]
       end
       data
     end
 
-    def expire(type)
-      case @stores[type][:expiration]
-      when Integer
-        expiration = (Time.now - 60 * 10).to_i
-        for server_id, data in Thread.main[type]
-          data.reject! {|key, value| key.to_i <= expiration }
+    def expire
+      for type, options in @stores
+        case options[:expiration]
+        when Integer
+          expiration = (Time.now - 60 * 10).to_i
+          for server_id, data in Thread.main[type]
+            data.reject! {|key, value| key.to_i <= expiration }
+          end
+        when :maximum
+          for server_id, data in Thread.main[type]
+            maximum = data.keys.max
+            data.reject! {|key, value| key != maximum}
+          end
         end
-      when :maximum
-        for server_id, data in Thread.main[type]
-          maximum = data.keys.max
-          data.reject! {|key, value| key != maximum}
-        end
+        Thread.main[type].reject! {|server_id, data| data.empty?}
       end
-      Thread.main[type].reject! {|server_id, data| data.empty?}
     end
 
     def keys
+      expire
       keys = {}
       for type, options in @stores
-        expire(type)
         keys[type] = {}
         for key, value in Thread.main[type]
           keys[type][key] = value.keys
@@ -80,10 +81,8 @@ module Radome
             Thread.main[type][id][timestamp].merge!(metrics)
           end
         end
-        if @stores[type][:expiration] == :maximum
-          expire(type)
-        end
       end
+      expire
     end
 
   end
