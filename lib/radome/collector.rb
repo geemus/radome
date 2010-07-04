@@ -20,17 +20,10 @@ module Radome
 
       # find available local keys and sync this list with peer
       response = connection.request(:method => 'POST', :body => @data_store.keys.to_json)
-      json = JSON.parse(response.body)
+      data = JSON.parse(response.body)
 
-      # update local data from peer
-      @data_store.update({'metrics' => json['metrics']['push']})
-
-      # push requested updates to peer
-      pull = {}
-      for server_id, keys in json['metrics']['pull']
-        pull[server_id] = @data_store.data['metrics'][server_id].reject {|key,value| !keys.include?(key)}
-      end
-      connection.request(:method => 'PUT', :body => {'metrics' => pull}.to_json)
+      # update local data from peer and push requested data back out
+      connection.request(:method => 'PUT', :body => @data_store.pushpull(data).to_json)
     end
 
     def run

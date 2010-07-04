@@ -75,6 +75,23 @@ module Radome
       data.to_json
     end
 
+    def pushpull(new_data)
+      push = {}
+      for type, data in new_data
+        push[type] = data['push']
+      end
+      update(push)
+
+      pull = {}
+      for type, data in new_data
+        pull[type] = {}
+        for server_id, keys in data['pull']
+          pull[type][server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
+        end
+      end
+      pull
+    end
+
     def update(new_data)
       for type, data in new_data
         for id, value in data
