@@ -2,8 +2,6 @@
 require 'rubygems'
 require 'json'
 
-hostname = `hostname`.chomp!
-
 uptime = `uptime`
 one_minute_load, five_minute_load, fifteen_minute_load = uptime.match(/load averages: ([\.0-9]*) ([\.0-9]*) ([\.0-9]*)/).captures
 
