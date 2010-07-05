@@ -9,6 +9,7 @@ module Radome
 
     def initialize
       @data_store = DataStore.new
+      sense([:recurring, :startup])
     end
 
     def connection
@@ -26,11 +27,8 @@ module Radome
       connection.request(:method => 'PUT', :body => @data_store.pushpull(data))
     end
 
-    def run
-      while true
-        sense(:recurring)
-        sleep(5)
-      end
+    def hostname
+      Socket.gethostname
     end
 
     def sense(sensors=:recurring)
@@ -38,7 +36,7 @@ module Radome
       for sensor in [*sensors]
         new_data.merge!(JSON.parse(`#{File.dirname(__FILE__)}/sensors/#{sensor}.rb`))
       end
-      @data_store.update({'metrics' => { Socket.gethostname => { Time.now.to_i.to_s => new_data } }})
+      @data_store.update({'metrics' => { hostname => { Time.now.to_i.to_s => new_data } }})
     end
 
   end
