@@ -59,6 +59,31 @@ module Radome
       end
     end
 
+    def gossip
+      connection = Excon.new('http://localhost:9292/')
+
+      # find available local keys and sync this list with peer
+      response = connection.request(:method => 'POST', :body => keys)
+      data = JSON.parse(response.body)
+
+      # update local data from peer and push requested data back out
+      push = {}
+      for type, datum in data
+        push[type] = datum['push']
+      end
+      update(push)
+
+      pull = {}
+      for type, datum in data
+        pull[type] = {}
+        for server_id, keys in datum['pull']
+          pull[type][server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
+        end
+      end
+
+      connection.request(:method => 'PUT', :body => pull.to_json)
+    end
+
     def keys
       expire
       keys = {}
@@ -71,30 +96,13 @@ module Radome
       keys.to_json
     end
 
-    def pushpull(new_data)
-      push = {}
-      for type, data in new_data
-        push[type] = data['push']
-      end
-      update(push)
-
-      pull = {}
-      for type, data in new_data
-        pull[type] = {}
-        for server_id, keys in data['pull']
-          pull[type][server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
-        end
-      end
-      pull.to_json
-    end
-
     def update(new_data)
       for type, data in new_data
         for id, value in data
           Thread.main[type][id] ||= {}
-          for timestamp, metrics in value
+          for timestamp, data in value
             Thread.main[type][id][timestamp] ||= {}
-            Thread.main[type][id][timestamp].merge!(metrics)
+            Thread.main[type][id][timestamp].merge!(data)
           end
         end
       end

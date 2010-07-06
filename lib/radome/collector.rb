@@ -12,19 +12,9 @@ module Radome
       sense([:recurring, :startup])
     end
 
-    def connection
-      @connection ||= Excon.new('http://localhost:9292/')
-    end
-
     def gossip(sensors=:recurring)
       sense(sensors)
-
-      # find available local keys and sync this list with peer
-      response = connection.request(:method => 'POST', :body => @data_store.keys)
-      data = JSON.parse(response.body)
-
-      # update local data from peer and push requested data back out
-      connection.request(:method => 'PUT', :body => @data_store.pushpull(data))
+      @data_store.gossip
     end
 
     def hostname
