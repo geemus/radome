@@ -5,7 +5,9 @@ module Radome
   class DataStore
 
     def initialize
+      srand
       @stores = {
+        'config'   => {},
         'metrics'  => { :expiration => 60 * 10 }
       }
       for key, values in @stores
@@ -60,7 +62,9 @@ module Radome
     end
 
     def gossip
-      connection = Excon.new('http://localhost:9292/')
+      peers = Thread.main['config']['peers'].values.first
+      peer = peers[rand(peers.length)]
+      connection = Excon.new(peer)
 
       # find available local keys and sync this list with peer
       response = connection.request(:method => 'POST', :body => keys)
