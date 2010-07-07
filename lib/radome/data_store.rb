@@ -101,8 +101,14 @@ module Radome
         for id, value in data
           Thread.main[type][id] ||= {}
           for timestamp, data in value
-            Thread.main[type][id][timestamp] ||= {}
-            Thread.main[type][id][timestamp].merge!(data)
+            case data
+            when Array
+              Thread.main[type][id][timestamp] ||= []
+              Thread.main[type][id][timestamp] |= data
+            when Hash
+              Thread.main[type][id][timestamp] ||= {}
+              Thread.main[type][id][timestamp].merge!(data)
+            end
           end
         end
       end
