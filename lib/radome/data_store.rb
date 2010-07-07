@@ -63,29 +63,30 @@ module Radome
 
     def gossip
       peers = Thread.main['config']['peers'].values.first
-      peer = peers[rand(peers.length)]
-      connection = Excon.new(peer)
+      if peer = peers[rand(peers.length)]
+        connection = Excon.new(peer)
 
-      # find available local keys and sync this list with peer
-      response = connection.request(:method => 'POST', :body => keys)
-      data = JSON.parse(response.body)
+        # find available local keys and sync this list with peer
+        response = connection.request(:method => 'POST', :body => keys)
+        data = JSON.parse(response.body)
 
-      # update local data from peer and push requested data back out
-      push = {}
-      for type, datum in data
-        push[type] = datum['push']
-      end
-      update(push)
-
-      pull = {}
-      for type, datum in data
-        pull[type] = {}
-        for server_id, keys in datum['pull']
-          pull[type][server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
+        # update local data from peer and push requested data back out
+        push = {}
+        for type, datum in data
+          push[type] = datum['push']
         end
-      end
+        update(push)
 
-      connection.request(:method => 'PUT', :body => pull.to_json)
+        pull = {}
+        for type, datum in data
+          pull[type] = {}
+          for server_id, keys in datum['pull']
+            pull[type][server_id] = Thread.main[type][server_id].reject {|key,value| !keys.include?(key)}
+          end
+        end
+
+        connection.request(:method => 'PUT', :body => pull.to_json)
+      end
     end
 
     def keys

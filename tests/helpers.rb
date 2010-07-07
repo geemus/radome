@@ -32,7 +32,7 @@ with_server do
     'metrics' => {'remote' => datum}
   }.to_json)
   collector.data_store.update({'metrics' => {'local' => datum}})
-  collector.data_store.update({'config' => {'peers' => {Time.now.to_i.to_s => ['http://localhost:9292/']}}})
+  collector.data_store.update({'config' => {'peers' => {Time.now.to_i.to_s => ['http://localhost:9292']}}})
   3.times do
     sleep(1)
     p collector.gossip
