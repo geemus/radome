@@ -5,7 +5,6 @@ def with_server(&block)
   pid = Process.fork do
     Radome::Server.run
   end
-  sleep(1)
   yield
   Process.kill(9, pid)
 end
@@ -19,23 +18,9 @@ def get_data
   JSON.parse(data)
 end
 
-collector = Radome::Collector.new
-
 with_server do
-  datum = {Time.now.to_i.to_s => {'a' => 'b'}}
-  connection.request(:method => 'PUT', :body => {
-    'metrics' => {'remote' => datum}
-  }.to_json)
-  collector.data_store.update({'metrics' => {'local' => datum}})
-  collector.data_store.update({'config' => {'peers' => {Time.now.to_i.to_s => ['http://localhost:9292']}}})
-  3.times do
-    sleep(1)
-    p collector.gossip
-  end
+  sleep(5)
   require 'pp'
-  p 'local'
-  pp JSON.parse(collector.data_store.data)
   p 'remote'
   pp get_data
-  p JSON.parse(collector.data_store.data) == get_data
 end

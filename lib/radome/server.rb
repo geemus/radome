@@ -6,6 +6,13 @@ module Radome
 
     def self.run
       server = Radome::Server.new
+      Thread.new do
+        collector = Radome::Collector.new
+        while(true)
+          sleep(1)
+          collector.gossip
+        end
+      end
       Rack::Handler::WEBrick.run(
         server,
         :Port => 9292,
