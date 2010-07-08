@@ -62,8 +62,9 @@ module Radome
     end
 
     def gossip
-      peers = Thread.main['config']['peers'].values.first
-      if peer = peers[rand(peers.length)]
+      if Thread.main['config']['peers'] &&
+          (peers = Thread.main['config']['peers'].values.first) &&
+          (peer = peers[rand(peers.length)])
         connection = Excon.new(peer)
 
         # find available local keys and sync this list with peer
