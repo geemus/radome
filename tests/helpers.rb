@@ -3,12 +3,7 @@ require 'excon'
 
 def with_server(&block)
   pid = Process.fork do
-    Rack::Handler::WEBrick.run(
-      Radome::Server.new,
-      :Port => 9292,
-      :AccessLog => [],
-      :Logger => WEBrick::Log.new(nil, WEBrick::Log::ERROR)
-    )
+    Radome::Server.run
   end
   sleep(1)
   yield

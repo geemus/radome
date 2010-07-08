@@ -4,7 +4,17 @@ require 'radome/data_store'
 module Radome
   class Server < Sinatra::Base
 
-    def initialize(*args)
+    def self.run
+      server = Radome::Server.new
+      Rack::Handler::WEBrick.run(
+        server,
+        :Port => 9292,
+        :AccessLog => [],
+        :Logger => WEBrick::Log.new(nil, WEBrick::Log::ERROR)
+      )
+    end
+
+    def initialize
       @data_store = DataStore.new
       super
     end
