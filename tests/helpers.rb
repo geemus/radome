@@ -9,18 +9,8 @@ def with_server(&block)
   Process.kill(9, pid)
 end
 
-def connection
-  @connection ||= Excon.new('http://localhost:9292/')
-end
-
-def get_data
-  data = connection.request(:method => 'GET').body
-  JSON.parse(data)
-end
-
 with_server do
   sleep(5)
   require 'pp'
-  p 'remote'
-  pp get_data
+  pp JSON.parse(Excon.get('http://localhost:9292/').body)
 end
